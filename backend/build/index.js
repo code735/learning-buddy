@@ -64,43 +64,6 @@ const s3 = new S3Client({
     },
 });
 const upload = multer({ storage: multer.memoryStorage() });
-function uploadToWeaviate(fileName, extractedText, url, embeddings) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        const wcdUrl = process.env.WCD_URL || '';
-        const wcdApiKey = process.env.WCD_API_KEY || '';
-        const client = yield weaviate_ts_client_1.default.client({
-            scheme: 'https',
-            host: wcdUrl,
-            apiKey: new weaviate_ts_client_1.ApiKey(wcdApiKey),
-        });
-        const dataObject = {
-            fileName: fileName,
-            extractedText: extractedText,
-            url: url,
-        };
-        let batcher = client.batch.objectsBatcher();
-        batcher = batcher.withObject({
-            class: 'PdfDetails',
-            properties: dataObject,
-            vector: embeddings,
-        });
-        try {
-            const response = yield batcher.do();
-            if ((_b = (_a = response[0]) === null || _a === void 0 ? void 0 : _a.result) === null || _b === void 0 ? void 0 : _b.errors) {
-                console.error('Error storing data in Weaviate:', response[0].result.errors);
-                // Handle the error appropriately
-            }
-            else {
-                console.log('Data object with embeddings stored successfully.');
-            }
-        }
-        catch (error) {
-            console.error('Error storing data in Weaviate:', error);
-            throw error;
-        }
-    });
-}
 function createPdfDetailsClass(client) {
     return __awaiter(this, void 0, void 0, function* () {
         const classObj = {

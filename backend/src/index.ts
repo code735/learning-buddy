@@ -29,49 +29,6 @@ const s3 = new S3Client({
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-async function uploadToWeaviate(
-  fileName: string,
-  extractedText: string,
-  url: string,
-  embeddings: number[]
-): Promise<void> {
-  const wcdUrl: string = process.env.WCD_URL || '';
-  const wcdApiKey: string = process.env.WCD_API_KEY || '';
-
-  const client: WeaviateClient = await weaviate.client({
-    scheme: 'https',
-    host: wcdUrl,
-    apiKey: new ApiKey(wcdApiKey),
-  });
-
-  const dataObject = {
-    fileName: fileName,
-    extractedText: extractedText,
-    url: url,
-  };
-
-  let batcher = client.batch.objectsBatcher();
-
-  batcher = batcher.withObject({
-    class: 'PdfDetails',
-    properties: dataObject,
-    vector: embeddings,
-  });
-
-  try {
-    const response = await batcher.do();
-    if (response[0]?.result?.errors) {
-      console.error('Error storing data in Weaviate:', response[0].result.errors);
-      // Handle the error appropriately
-    } else {
-      console.log('Data object with embeddings stored successfully.');
-    }
-  } catch (error) {
-    console.error('Error storing data in Weaviate:', error);
-    throw error;
-  }
-}
-
 async function createPdfDetailsClass(client: WeaviateClient) {
   const classObj = {
     class: 'PdfDetails',
