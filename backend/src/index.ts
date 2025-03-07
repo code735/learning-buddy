@@ -8,7 +8,7 @@ const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { v4: uuidv4 } = require("uuid");
-import weaviate, { WeaviateClient } from 'weaviate-client';
+import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client';
 
 
 const app = express();
@@ -28,6 +28,45 @@ const s3 = new S3Client({
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+async function uploadToWeaviate(
+  fileName: string,
+  extractedText: string,
+  url: string,
+  embeddings: number[]
+): Promise<void> {
+  const wcdUrl: string = process.env.WCD_URL || '';
+  const wcdApiKey: string = process.env.WCD_API_KEY || '';
+
+  const client: WeaviateClient = await weaviate.client({
+    scheme: 'https',
+    host: wcdUrl,
+    apiKey: new ApiKey(wcdApiKey),
+  });
+
+  const dataObject = {
+    fileName: fileName,
+    extractedText: extractedText,
+    url: url,
+  };
+
+  let batcher = client.batch.objectsBatcher();
+
+  batcher = batcher.withObject({
+    class: 'PdfDetails',
+    properties: dataObject,
+    vector: embeddings,
+  });
+
+  try {
+    const response = await batcher.do();
+    console.log('Data object with embeddings stored successfully.');
+    console.log(response);
+  } catch (error) {
+    console.error('Error storing data in Weaviate:', error);
+    throw error;
+  }
+}
 
 async function uploadToS3(fileBuffer: Buffer, fileName: string, mimeType: MimeType) {
 
@@ -58,9 +97,14 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string, mimeType: MimeTy
     const embeddings = await generateEmbeddings(extracted_text?.text);
     console.log("embeddings:", ...embeddings);
 
+    await uploadToWeaviate(fileName, extracted_text, url, embeddings);
+
+
+    console.log('Data object with embeddings stored successfully.');
+
     return url;
   } catch (error) {
-    console.error("Error uploading to S3:", error); // Log error details
+    console.error("Error uploading to S3:", error);
     throw error;
   }
 }

@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17,6 +50,7 @@ const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { v4: uuidv4 } = require("uuid");
+const weaviate_ts_client_1 = __importStar(require("weaviate-ts-client"));
 const app = express();
 const PORT = 5000;
 const prisma = new client_1.PrismaClient();
@@ -30,6 +64,37 @@ const s3 = new S3Client({
     },
 });
 const upload = multer({ storage: multer.memoryStorage() });
+function uploadToWeaviate(fileName, extractedText, url, embeddings) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const wcdUrl = process.env.WCD_URL || '';
+        const wcdApiKey = process.env.WCD_API_KEY || '';
+        const client = yield weaviate_ts_client_1.default.client({
+            scheme: 'https',
+            host: wcdUrl,
+            apiKey: new weaviate_ts_client_1.ApiKey(wcdApiKey),
+        });
+        const dataObject = {
+            fileName: fileName,
+            extractedText: extractedText,
+            url: url,
+        };
+        let batcher = client.batch.objectsBatcher();
+        batcher = batcher.withObject({
+            class: 'PdfDetails',
+            properties: dataObject,
+            vector: embeddings,
+        });
+        try {
+            const response = yield batcher.do();
+            console.log('Data object with embeddings stored successfully.');
+            console.log(response);
+        }
+        catch (error) {
+            console.error('Error storing data in Weaviate:', error);
+            throw error;
+        }
+    });
+}
 function uploadToS3(fileBuffer, fileName, mimeType) {
     return __awaiter(this, void 0, void 0, function* () {
         const uuid = uuidv4();
@@ -51,15 +116,16 @@ function uploadToS3(fileBuffer, fileName, mimeType) {
     VALUES (${fileName}, ${extracted_text}, ${url})`;
             const embeddings = yield (0, api_1.generateEmbeddings)(extracted_text === null || extracted_text === void 0 ? void 0 : extracted_text.text);
             console.log("embeddings:", ...embeddings);
+            yield uploadToWeaviate(fileName, extracted_text, url, embeddings);
+            console.log('Data object with embeddings stored successfully.');
             return url;
         }
         catch (error) {
-            console.error("Error uploading to S3:", error); // Log error details
+            console.error("Error uploading to S3:", error);
             throw error;
         }
     });
 }
-// Routes 
 app.post("/upload", upload.single("file"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {

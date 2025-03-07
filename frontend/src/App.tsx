@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState,  } from "react";
 import "./Styles/App.scss";
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AttachFile, SendRounded } from "@mui/icons-material";
 
 function App() {
@@ -65,43 +65,11 @@ function App() {
 
   return (
     <div className="App">
-      <div className="main-container">
-        <div className="sidebar-container"></div>
-        <div className="chat-container">
-          <div ref={responseContainerRef} className="response-container">
-            <div className="response-block">
-              <ReactMarkdown>{markdown}</ReactMarkdown>
-            </div>
-          </div>
-          <div ref={inputContainerRef} className="input-container">
-            <div className="input-block">
-              <textarea
-                ref={textareaRef}
-                onInput={handleInput}
-                placeholder="Ask PDF..."
-              />
-              <div className="input-tool-container">
-                <div className="tool-button">
-                  <AttachFile className="tool-icon" />
-                </div>
-                <div
-                  className="tool-button"
-                  style={{ background: "white", borderRadius: "50%" }}
-                >
-                  <SendRounded
-                    className="tool-icon"
-                    style={{
-                      transform: "rotate(-45deg)",
-                      color: "#323232",
-                      paddingLeft: "4px",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="" element={<Fileupload}/>
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
