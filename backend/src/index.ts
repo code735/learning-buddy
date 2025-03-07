@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { MimeType, multerRequest } from "./types/types";
 import { PrismaClient } from "@prisma/client";
-import { generateEmbeddings } from "./api";
+import { generateEmbeddings, retrieveRelevantContext } from "./api";
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
@@ -9,6 +9,7 @@ const pdfParse = require("pdf-parse");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { v4: uuidv4 } = require("uuid");
 import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client';
+import OpenAI from "openai";
 
 
 const app = express();
@@ -27,33 +28,36 @@ const s3 = new S3Client({
   },
 });
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 async function createPdfDetailsClass(client: WeaviateClient) {
-  const classObj = {
-    class: 'PdfDetails',
-    vectorizer: 'none',  // Since you're providing custom vectors
-    properties: [
-      {
-        name: 'fileName',
-        dataType: ['string'],
-      },
-      {
-        name: 'extractedText',
-        dataType: ['text'],
-      },
-      {
-        name: 'url',
-        dataType: ['string'],
-      },
-    ],
-  };
-
+  const className = 'PdfDetails';
+  
   try {
+    const classExists = await client.schema.exists(className);
+    if (classExists) {
+      console.log(`Class ${className} already exists. Skipping creation.`);
+      return;
+    }
+
+    const classObj = {
+      class: className,
+      vectorizer: 'none',
+      properties: [
+        { name: 'fileName', dataType: ['string'] },
+        { name: 'extractedText', dataType: ['text'] },
+        { name: 'url', dataType: ['string'] },
+      ],
+    };
+
     await client.schema.classCreator().withClass(classObj).do();
-    console.log('PdfDetails class created successfully');
+    console.log(`${className} class created successfully`);
   } catch (error) {
-    console.error('Error creating PdfDetails class:', error);
+    console.error(`Error handling ${className} class:`, error);
   }
 }
 
@@ -84,6 +88,20 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string, mimeType: MimeTy
     VALUES (${fileName}, ${extracted_text}, ${url})`;
 
     const embeddings = await generateEmbeddings(extracted_text?.text);
+    const userQuery = 'what is knowledge based systems';
+    const context = await retrieveRelevantContext(userQuery, fileName);
+    const prompt = `Context:\n${context}\n\nQuestion: ${userQuery}\nAnswer:`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 150,
+    });
+    
+    const answer = response?.choices[0]?.message?.content?.trim();
+
+    console.log("answer",answer)
+
     console.log("embeddings:", ...embeddings);
 
     const client: WeaviateClient = await weaviate.client({
