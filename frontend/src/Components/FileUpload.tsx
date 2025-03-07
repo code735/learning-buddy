@@ -1,9 +1,20 @@
 "use client"
 
+import React from "react"
 import { useState, useRef } from "react"
-
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  CircularProgress,
+  Alert,
+  Grid,
+  IconButton,
+  Stack,
+  LinearProgress,
+} from "@mui/material"
 import { CloudUpload as CloudUploadIcon, PictureAsPdf as PdfIcon, Close as CloseIcon } from "@mui/icons-material"
-import { Paper } from "@mui/material"
 
 type FileType = "pdf" | "video" | null
 type UploadStatus = "idle" | "uploading" | "success" | "error"

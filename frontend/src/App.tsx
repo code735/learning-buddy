@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState,  } from "react";
 import "./Styles/App.scss";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AttachFile, SendRounded } from "@mui/icons-material";
+import FileUpload from "./Components/FileUpload";
 
 function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -67,7 +68,7 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="" element={<Fileupload}/>
+          <Route path="/upload" element={<FileUpload />}/>
         </Routes>
       </BrowserRouter>
     </div>
