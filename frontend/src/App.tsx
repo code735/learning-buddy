@@ -9,6 +9,8 @@ import Pdfupload from "./Components/Pdfupload"
 import Videoupload from "./Components/Videoupload"
 import Lmspage from "./Components/Lmspage"
 import Navbar from "./Components/Navbar"
+import PdfChat from "./Components/PdfChat"
+import VideoChat from "./Components/VideoChat"
 
 
 // Create a theme instance
@@ -23,14 +25,58 @@ const theme = createTheme({
   },
 })
 
+type RouteType =
+  | "dashboard"
+  | "pdf"
+  | "video"
+  | "lms"
+  | { type: "pdfchat"; pdfName: string }
+  | { type: "videochat"; videoName: string }
+
 
 
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<"dashboard" | "pdf" | "video" | "lms">("dashboard")
-  const navigate = (page: "dashboard" | "pdf" | "video" | "lms") => {
-    setCurrentPage(page)
+  const [currentRoute, setCurrentRoute] = useState<RouteType>("dashboard")
+
+  // Function to handle navigation
+  const navigate = (route: RouteType) => {
+    setCurrentRoute(route)
   }
+
+  // Determine which page to show based on the current route
+  const renderPage = () => {
+    if (typeof currentRoute === "string") {
+      switch (currentRoute) {
+        case "dashboard":
+          return <Dashboard onNavigate={navigate} />
+        case "pdf":
+          return <Pdfupload onNavigate={navigate} />
+        case "video":
+          return <Videoupload onNavigate={navigate} />
+        case "lms":
+          return <Lmspage onNavigate={navigate} />
+        default:
+          return <Dashboard onNavigate={navigate} />
+      }
+    } else {
+      // Handle object-type routes
+      if (currentRoute.type === "pdfchat") {
+        return <PdfChat pdfName={currentRoute.pdfName} onNavigate={navigate} />
+      } else if (currentRoute.type === "videochat") {
+        return <VideoChat videoName={currentRoute.videoName} onNavigate={navigate} />
+      }
+    }
+  }
+
+  const getCurrentPageName = (): string => {
+    if (typeof currentRoute === "string") {
+      return currentRoute
+    } else {
+      return currentRoute.type
+    }
+  }
+
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const responseContainerRef = useRef<HTMLDivElement>(null);
@@ -94,14 +140,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Navbar currentPage={currentPage} onNavigate={navigate} />
+      <Navbar currentPage={getCurrentPageName()} onNavigate={navigate} />
       <Container maxWidth="lg">
-        <Box sx={{ my: 4, pt: 2 }}>
-          {currentPage === "dashboard" && <Dashboard onNavigate={navigate} />}
-          {currentPage === "pdf" && <Pdfupload onNavigate={navigate} />}
-          {currentPage === "video" && <Videoupload onNavigate={navigate} />}
-          {currentPage === "lms" && <Lmspage onNavigate={navigate} />}
-        </Box>
+        <Box sx={{ my: 4, pt: 2 }}>{renderPage()}</Box>
       </Container>
     </ThemeProvider>
   );

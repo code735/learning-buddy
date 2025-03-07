@@ -1,5 +1,6 @@
 "use client"
-import React, { useState } from "react";
+
+import { useState } from "react"
 import {
   AppBar,
   Toolbar,
@@ -14,24 +15,24 @@ import {
   ListItemText,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
-import { Menu as MenuIcon, Home as HomeIcon, PictureAsPdf, VideoLibrary, School } from "@mui/icons-material";
+} from "@mui/material"
+import { Menu as MenuIcon, Home as HomeIcon, PictureAsPdf, VideoLibrary, School } from "@mui/icons-material"
 
 export default function Navbar({ currentPage, onNavigate }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+    setMobileOpen(!mobileOpen)
+  }
 
   const navItems = [
     { name: "Dashboard", icon: <HomeIcon />, path: "dashboard" },
     { name: "PDF Upload", icon: <PictureAsPdf />, path: "pdf" },
     { name: "Video Upload", icon: <VideoLibrary />, path: "video" },
     { name: "LMS", icon: <School />, path: "lms" },
-  ];
+  ]
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
@@ -59,7 +60,7 @@ export default function Navbar({ currentPage, onNavigate }) {
         ))}
       </List>
     </Box>
-  );
+  )
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -118,5 +119,5 @@ export default function Navbar({ currentPage, onNavigate }) {
         {drawer}
       </Drawer>
     </Box>
-  );
+  )
 }

@@ -1,16 +1,18 @@
 "use client"
-import React from "react";
+
+import React from "react"
 
 import { useState } from "react"
-import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress } from "@mui/material"
-import { VideoLibrary } from "@mui/icons-material"
+import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress, Grid } from "@mui/material"
+import { VideoLibrary, Chat } from "@mui/icons-material"
 
 interface VideoUploadProps {
-  onNavigate: (page: "dashboard" | "pdf" | "video" | "lms") => void
+  onNavigate: (page: any) => void
 }
 
-export default function Videoupload({ onNavigate }: VideoUploadProps) {
+export default function VideoUpload({ onNavigate }: VideoUploadProps) {
   const [videoUrl, setVideoUrl] = useState("")
+  const [videoTitle, setVideoTitle] = useState("")
   const [uploading, setUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +27,10 @@ export default function Videoupload({ onNavigate }: VideoUploadProps) {
     setError(null)
   }
 
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setVideoTitle(event.target.value)
+  }
+
   const handleUpload = () => {
     if (!videoUrl.trim()) {
       setError("Please enter a YouTube URL")
@@ -33,6 +39,11 @@ export default function Videoupload({ onNavigate }: VideoUploadProps) {
 
     if (!isYoutubeUrl(videoUrl)) {
       setError("Please enter a valid YouTube URL")
+      return
+    }
+
+    if (!videoTitle.trim()) {
+      setError("Please enter a title for the video")
       return
     }
 
@@ -47,9 +58,18 @@ export default function Videoupload({ onNavigate }: VideoUploadProps) {
       // Reset after showing success message
       setTimeout(() => {
         setVideoUrl("")
+        setVideoTitle("")
         setUploadSuccess(false)
       }, 3000)
     }, 2000)
+  }
+
+  const handleChatWithVideo = () => {
+    if (videoUrl && videoTitle) {
+      onNavigate({ type: "videochat", videoName: videoTitle })
+    } else {
+      setError("Please enter both a YouTube URL and a title")
+    }
   }
 
   return (
@@ -86,6 +106,16 @@ export default function Videoupload({ onNavigate }: VideoUploadProps) {
           placeholder="https://www.youtube.com/watch?v=..."
           sx={{ mb: 2 }}
         />
+
+        <TextField
+          label="Video Title"
+          variant="outlined"
+          fullWidth
+          value={videoTitle}
+          onChange={handleTitleChange}
+          placeholder="Enter a title for this video"
+          sx={{ mb: 2 }}
+        />
       </Paper>
 
       {error && (
@@ -99,16 +129,31 @@ export default function Videoupload({ onNavigate }: VideoUploadProps) {
         </Alert>
       )}
 
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={!videoUrl || uploading}
-        onClick={handleUpload}
-        sx={{ mt: 2 }}
-      >
-        {uploading ? <CircularProgress size={24} color="inherit" /> : "Add Video"}
-      </Button>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={!videoUrl || !videoTitle || uploading}
+            onClick={handleUpload}
+          >
+            {uploading ? <CircularProgress size={24} color="inherit" /> : "Add Video"}
+          </Button>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            disabled={!videoUrl || !videoTitle}
+            onClick={handleChatWithVideo}
+            startIcon={<Chat />}
+          >
+            Chat with this Video
+          </Button>
+        </Grid>
+      </Grid>
     </Box>
   )
 }

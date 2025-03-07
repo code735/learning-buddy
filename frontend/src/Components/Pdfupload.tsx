@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react";
+import React from "react"
 
 import { useState } from "react"
-import { Box, Button, Typography, Paper, Alert, CircularProgress } from "@mui/material"
-import { CloudUpload } from "@mui/icons-material"
+import { Box, Button, Typography, Paper, Alert, CircularProgress, Grid } from "@mui/material"
+import { CloudUpload, Chat } from "@mui/icons-material"
 
 interface PdfUploadProps {
-  onNavigate: (page: "dashboard" | "pdf" | "video" | "lms") => void
+  onNavigate: (page: any) => void
 }
 
 export default function Pdfupload({ onNavigate }: PdfUploadProps) {
@@ -51,6 +51,14 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
         setUploadSuccess(false)
       }, 3000)
     }, 2000)
+  }
+
+  const handleChatWithPdf = () => {
+    if (file) {
+      onNavigate({ type: "pdfchat", pdfName: file.name })
+    } else {
+      setError("Please select a file first")
+    }
   }
 
   return (
@@ -103,16 +111,25 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
         </Alert>
       )}
 
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={!file || uploading}
-        onClick={handleUpload}
-        sx={{ mt: 2 }}
-      >
-        {uploading ? <CircularProgress size={24} color="inherit" /> : "Upload PDF"}
-      </Button>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Button variant="contained" color="primary" fullWidth disabled={!file || uploading} onClick={handleUpload}>
+            {uploading ? <CircularProgress size={24} color="inherit" /> : "Upload PDF"}
+          </Button>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            disabled={!file}
+            onClick={handleChatWithPdf}
+            startIcon={<Chat />}
+          >
+            Chat with this PDF
+          </Button>
+        </Grid>
+      </Grid>
     </Box>
   )
 }

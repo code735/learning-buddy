@@ -1,5 +1,7 @@
 "use client"
-import React from "react";
+
+import React from "react"
+
 import { useState } from "react"
 import {
   Box,
@@ -14,10 +16,10 @@ import {
   LinearProgress,
   Chip,
 } from "@mui/material"
-import { PictureAsPdf, VideoLibrary, AccessTime } from "@mui/icons-material"
+import { PictureAsPdf, VideoLibrary, AccessTime, Chat } from "@mui/icons-material"
 
 interface LmsPageProps {
-  onNavigate: (page: "dashboard" | "pdf" | "video" | "lms") => void
+  onNavigate: (page: any) => void
 }
 
 // Mock data for demonstration
@@ -59,6 +61,14 @@ export default function Lmspage({ onNavigate }: LmsPageProps) {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
+  }
+
+  const handleContinuePdf = (pdfTitle: string) => {
+    onNavigate({ type: "pdfchat", pdfName: pdfTitle })
+  }
+
+  const handleContinueVideo = (videoTitle: string) => {
+    onNavigate({ type: "videochat", videoName: videoTitle })
   }
 
   return (
@@ -112,9 +122,19 @@ export default function Lmspage({ onNavigate }: LmsPageProps) {
                             <Typography variant="body2">{pdf.progress}%</Typography>
                           </Box>
                         </Box>
-                        <Button variant="outlined" size="small">
-                          Continue
-                        </Button>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                          <Button variant="outlined" size="small" onClick={() => handleContinuePdf(pdf.title)}>
+                            Continue
+                          </Button>
+                          <Button
+                            variant="text"
+                            size="small"
+                            startIcon={<Chat />}
+                            onClick={() => handleContinuePdf(pdf.title)}
+                          >
+                            Chat
+                          </Button>
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -155,9 +175,18 @@ export default function Lmspage({ onNavigate }: LmsPageProps) {
                         </Box>
                         <Typography variant="body2">{video.progress}%</Typography>
                       </Box>
-                      <Button variant="contained" fullWidth sx={{ mt: 2 }}>
-                        {video.progress === 100 ? "Rewatch" : "Continue"}
-                      </Button>
+                      <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+                        <Button variant="contained" fullWidth onClick={() => handleContinueVideo(video.title)}>
+                          {video.progress === 100 ? "Rewatch" : "Continue"}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<Chat />}
+                          onClick={() => handleContinueVideo(video.title)}
+                        >
+                          Chat
+                        </Button>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
