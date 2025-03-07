@@ -60,11 +60,43 @@ async function uploadToWeaviate(
 
   try {
     const response = await batcher.do();
-    console.log('Data object with embeddings stored successfully.');
-    console.log(response);
+    if (response[0]?.result?.errors) {
+      console.error('Error storing data in Weaviate:', response[0].result.errors);
+      // Handle the error appropriately
+    } else {
+      console.log('Data object with embeddings stored successfully.');
+    }
   } catch (error) {
     console.error('Error storing data in Weaviate:', error);
     throw error;
+  }
+}
+
+async function createPdfDetailsClass(client: WeaviateClient) {
+  const classObj = {
+    class: 'PdfDetails',
+    vectorizer: 'none',  // Since you're providing custom vectors
+    properties: [
+      {
+        name: 'fileName',
+        dataType: ['string'],
+      },
+      {
+        name: 'extractedText',
+        dataType: ['text'],
+      },
+      {
+        name: 'url',
+        dataType: ['string'],
+      },
+    ],
+  };
+
+  try {
+    await client.schema.classCreator().withClass(classObj).do();
+    console.log('PdfDetails class created successfully');
+  } catch (error) {
+    console.error('Error creating PdfDetails class:', error);
   }
 }
 
@@ -97,7 +129,13 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string, mimeType: MimeTy
     const embeddings = await generateEmbeddings(extracted_text?.text);
     console.log("embeddings:", ...embeddings);
 
-    await uploadToWeaviate(fileName, extracted_text, url, embeddings);
+    const client: WeaviateClient = await weaviate.client({
+      scheme: 'https',
+      host: wcdUrl,
+      apiKey: new ApiKey(wcdApiKey),
+    });
+    
+    await createPdfDetailsClass(client);
 
 
     console.log('Data object with embeddings stored successfully.');
