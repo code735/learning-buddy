@@ -1,9 +1,10 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import { MimeType, multerRequest } from "./types/types";
 import { PrismaClient } from "@prisma/client";
 import { generateEmbeddings } from "./api";
 require("dotenv").config();
 const express = require("express");
+import cors from "cors";
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -12,6 +13,8 @@ import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client';
 
 
 const app = express();
+app.use(cors()); 
+
 const PORT = 5000;
 const prisma = new PrismaClient()
 
@@ -119,9 +122,52 @@ app.post("/upload", upload.single("file"), async (req: multerRequest, res: Respo
   }
 });
 
+
+
 app.get("/", (req: Request, res: Response) => {
   res.send("server working")
 })
+
+// ...existing code...
+
+app.post("/upload_video", async (req: Request, res: Response) => {
+  try {
+    const { url, title } = req.body;
+    
+    if (!url || !title) {
+      return res.status(400).json({ message: "URL and title are required." });
+    }
+
+    await prisma.$executeRaw`INSERT INTO video_details (url, title) VALUES (${url}, ${title})`;
+    
+    res.status(200).json({ message: "Video details uploaded successfully." });
+  } catch (error) {
+    console.error("Error uploading video details:", error);
+    res.status(500).json({ message: "Failed to upload video details.", error });
+  }
+});
+
+app.get("/fetch_all_pdf", async (req: Request, res: Response) => {
+  try {
+    const pdfs = await prisma.$queryRaw`SELECT * FROM pdf_details`;
+    res.status(200).json(pdfs);
+  } catch (error) {
+    console.error("Error fetching PDFs:", error);
+    res.status(500).json({ message: "Failed to fetch PDFs.", error });
+  }
+});
+
+app.get("/fetch_all_video", async (req: Request, res: Response) => {
+  try {
+    const videos = await prisma.$queryRaw`SELECT * FROM video_details`;
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    res.status(500).json({ message: "Failed to fetch videos.", error });
+  }
+});
+
+// ...existing code...
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

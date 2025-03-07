@@ -145,6 +145,42 @@ app.post("/upload", upload.single("file"), (req, res) => __awaiter(void 0, void 
 app.get("/", (req, res) => {
     res.send("server working");
 });
+// ...existing code...
+app.post("/upload_video", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { url, title } = req.body;
+        if (!url || !title) {
+            return res.status(400).json({ message: "URL and title are required." });
+        }
+        yield prisma.$executeRaw `INSERT INTO video_details (url, title) VALUES (${url}, ${title})`;
+        res.status(200).json({ message: "Video details uploaded successfully." });
+    }
+    catch (error) {
+        console.error("Error uploading video details:", error);
+        res.status(500).json({ message: "Failed to upload video details.", error });
+    }
+}));
+app.get("/fetch_all_pdf", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const pdfs = yield prisma.$queryRaw `SELECT * FROM pdf_details`;
+        res.status(200).json(pdfs);
+    }
+    catch (error) {
+        console.error("Error fetching PDFs:", error);
+        res.status(500).json({ message: "Failed to fetch PDFs.", error });
+    }
+}));
+app.get("/fetch_all_video", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const videos = yield prisma.$queryRaw `SELECT * FROM video_details`;
+        res.status(200).json(videos);
+    }
+    catch (error) {
+        console.error("Error fetching videos:", error);
+        res.status(500).json({ message: "Failed to fetch videos.", error });
+    }
+}));
+// ...existing code...
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

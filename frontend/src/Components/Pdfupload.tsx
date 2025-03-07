@@ -1,8 +1,7 @@
 "use client"
 
 import React from "react"
-
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Box, Button, Typography, Paper, Alert, CircularProgress, Grid } from "@mui/material"
 import { CloudUpload, Chat } from "@mui/icons-material"
 
@@ -15,6 +14,7 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
@@ -31,7 +31,7 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
     }
   }
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) {
       setError("Please select a file first")
       return
@@ -40,17 +40,31 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
     setUploading(true)
     setError(null)
 
-    // Simulate upload process
-    setTimeout(() => {
-      setUploading(false)
-      setUploadSuccess(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
 
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file')
+      }
+
+      setUploadSuccess(true)
+      
       // Reset after showing success message
       setTimeout(() => {
         setFile(null)
         setUploadSuccess(false)
       }, 3000)
-    }, 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleChatWithPdf = () => {
@@ -113,7 +127,13 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-          <Button variant="contained" color="primary" fullWidth disabled={!file || uploading} onClick={handleUpload}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth 
+            disabled={!file || uploading} 
+            onClick={handleUpload}
+          >
             {uploading ? <CircularProgress size={24} color="inherit" /> : "Upload PDF"}
           </Button>
         </Grid>
@@ -133,4 +153,3 @@ export default function Pdfupload({ onNavigate }: PdfUploadProps) {
     </Box>
   )
 }
-
