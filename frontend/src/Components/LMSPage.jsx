@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import VideoSection from './VideoSection';
 import PdfSection from './PdfSection';
 import YTSection from './YTSection';
-import './styles/LMSPage.css'; 
 
 const LMSPage = () => {
   const [pdfs, setPdfs] = useState([]);
@@ -28,10 +27,10 @@ const LMSPage = () => {
   };
 
   return (
-    <div className="lms-container">
+    <div className="lms-container" style={styles.lmsContainer}>
       <h1>Learning Buddy</h1>
 
-      <div className="upload-sections">
+      <div className="upload-sections" style={styles.uploadSections}>
         <div>
           <h3>Upload PDF</h3>
           <input type="file" onChange={handlePdfUpload} />
@@ -54,17 +53,40 @@ const LMSPage = () => {
       <YTSection ytLinks={ytLinks} />
 
       {/* Question Section */}
-      <div className="question-section">
+      <div className="question-section" style={styles.questionSection}>
         <h2>Ask a Question</h2>
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask something about the uploaded content"
+          style={styles.textarea}
         ></textarea>
         <button>Submit Question</button>
       </div>
     </div>
   );
+};
+
+const styles = {
+  lmsContainer: {
+    padding: '20px',
+  },
+  uploadSections: {
+    display: 'flex',
+    gap: '20px',
+    flexDirection: 'column',
+    marginBottom: '30px',
+  },
+  questionSection: {
+    marginTop: '20px',
+  },
+  textarea: {
+    width: '100%',
+    height: '100px',
+    padding: '10px',
+    fontSize: '16px',
+    marginBottom: '10px',
+  },
 };
 
 export default LMSPage;
