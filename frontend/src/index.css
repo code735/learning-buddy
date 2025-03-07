@@ -11,3 +11,48 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.lms-container {
+  padding: 20px;
+}
+
+.upload-sections {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+
+.video-section, .pdf-section, .yt-section {
+  margin-bottom: 30px;
+}
+
+.video-list, .yt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pdf-list {
+  list-style-type: none;
+}
+
+.pdf-list li {
+  margin: 10px 0;
+}
+
+.pdf-list a {
+  text-decoration: none;
+  color: blue;
+}
+
+.question-section {
+  margin-top: 20px;
+}
+
+.question-section textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
