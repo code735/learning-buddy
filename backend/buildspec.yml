@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Cleaning up old dependencies..."
+      - rm -rf $CODEBUILD_SRC_DIR/backend/node_modules
+      - echo "Installing dependencies..."
+      - npm install --prefix $CODEBUILD_SRC_DIR/frontend --legacy-peer-deps
+      - echo "Checking for vulnerabilities..."
+      - npm audit --prefix $CODEBUILD_SRC_DIR/backend || true
+
+  build:
+    commands:
+      - echo "Installing TypeScript..."
+      - npm install -g typescript
+      - echo "Building the node server..."
+      - npm run build --prefix $CODEBUILD_SRC_DIR/backend
+
+  post_build:
+    commands:
+      - echo "Zipping build artifacts..."
+      - zip -r app.zip $CODEBUILD_SRC_DIR/backend/*
+      - echo "Uploading ZIP file to S3..."
+      - aws s3 cp app.zip s3://ask-pdf-http-s3/app.zip
+
+artifacts:
+  files:
+    - app.zip
