@@ -20,6 +20,8 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const PORT = 5000;
 const prisma = new client_1.PrismaClient();
+const wcdUrl = process.env.WCD_URL;
+const wcdApiKey = process.env.WCD_API_KEY;
 const s3 = new S3Client({
     region: process.env.AWS_REGION,
     credentials: {
@@ -49,7 +51,6 @@ function uploadToS3(fileBuffer, fileName, mimeType) {
     VALUES (${fileName}, ${extracted_text}, ${url})`;
             const embeddings = yield (0, api_1.generateEmbeddings)(extracted_text === null || extracted_text === void 0 ? void 0 : extracted_text.text);
             console.log("embeddings:", ...embeddings);
-            // console.log("extractedSentences:", ...extractedSentences);
             return url;
         }
         catch (error) {

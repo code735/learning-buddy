@@ -16,11 +16,10 @@ const generateEmbeddings = (text) => __awaiter(void 0, void 0, void 0, function*
             console.error("generateEmbeddings expects a string.");
             return null;
         }
-        // Split the text into sentences
         const sentences = text
-            .split(/(?<=[.?!])\s+/) // Split at punctuation followed by space
-            .map((sentence) => sentence.trim()) // Remove spaces
-            .filter((sentence) => sentence.length > 0); // Remove empty lines
+            .split(/(?<=[.?!])\s+/)
+            .map((sentence) => sentence.trim())
+            .filter((sentence) => sentence.length > 0);
         const payload = { inputs: {
                 source_sentence: "",
                 sentences
@@ -28,7 +27,7 @@ const generateEmbeddings = (text) => __awaiter(void 0, void 0, void 0, function*
         console.log("payload", payload);
         const response = yield fetch("https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2", {
             method: "POST",
-            body: JSON.stringify(payload), // ✅ Send as an array
+            body: JSON.stringify(payload),
             headers: {
                 Authorization: `Bearer ${process.env.HUGGINGFACEAPI_KEY}`,
                 "Content-Type": "application/json",
@@ -39,7 +38,7 @@ const generateEmbeddings = (text) => __awaiter(void 0, void 0, void 0, function*
             console.error("Hugging Face API Error:", data.error);
             return null;
         }
-        return data; // Returns embeddings
+        return data;
     }
     catch (error) {
         console.error("Error generating embeddings:", error);
