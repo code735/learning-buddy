@@ -1,0 +1,15 @@
+.page-editor {
+  & {  width: 100%; background: #1e1e1e; box-sizing: border-box; position: relative; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+  h4 { text-align: center; }
+  .main-page-playarea {
+    & { min-height: 85vh; max-height: 84vh; background: #1e1e1e; overflow: scroll; width: 65vw; }
+    &::-webkit-scrollbar { display: none; }
+    .root-element {
+      & { padding: 10px; border: 2px solid red; }
+    }
+    .selected-element { border-color: black; }
+  }
+  .main-page-playarea ::-webkit-scrollbar-thumb {
+    & { width: 10px; }
+  }
+}

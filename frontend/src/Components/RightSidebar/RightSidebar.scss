@@ -1,0 +1,20 @@
+.right-sidebar {
+  & { background: #2c2c2c; height: calc(100vh - 45px); width: 20vw; color: #fff; padding: 6px 0 20px; box-sizing: border-box; }
+  .searchbar-addicon-container { 
+    & { display: flex; gap: 5px; justify-content: space-between; width: 100%; padding: 10px; box-sizing: border-box; border-bottom: 1px solid #625d5d; align-items: center; }
+    svg { font-size: 14px; cursor: pointer; }
+    .search-bar {
+      input { width: 100%; font-size: 12px; background: transparent; color: #fff; border: none; outline: none; }
+    }
+  }
+  .suggestions-container {
+    & { height: 43%; overflow-y: scroll; border-bottom: 1px solid #625d5d; flex-wrap: wrap; gap: 5px; padding: 5px; }
+    &::-webkit-scrollbar { width: 10px; display: none; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #707070; border-radius: 10px; margin: 10px; padding: 10px; cursor: pointer; }
+    .suggestion { 
+      & { cursor: pointer; font-size: 14px; font-weight: 200; padding: 5px 10px; }
+      &:hover { background-color: #000; }
+    }
+  }
+}

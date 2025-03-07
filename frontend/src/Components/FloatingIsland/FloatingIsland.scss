@@ -1,0 +1,11 @@
+.island-container {
+  & { display: flex; justify-content: center; align-items: center; position: absolute; width: 100%; bottom: 10px; }
+  .island-drawer {
+    & { background: #2c2c2c; color: #fff; border-radius: 50px; }
+  }
+}
+
+
+.html-tags-container {
+  & { min-height: 300px; }
+}
