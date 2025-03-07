@@ -1,9 +1,20 @@
 "use client"
 import React from "react"
-import { useState, useRef } from "react"
 
+import { useState, useRef } from "react"
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  CircularProgress,
+  Alert,
+  Grid,
+  IconButton,
+  Stack,
+  LinearProgress,
+} from "@mui/material"
 import { CloudUpload as CloudUploadIcon, PictureAsPdf as PdfIcon, Close as CloseIcon } from "@mui/icons-material"
-import { Box, Paper } from "@mui/material"
 
 type FileType = "pdf" | "video" | null
 type UploadStatus = "idle" | "uploading" | "success" | "error"
@@ -24,7 +35,7 @@ const PdfPreview = ({ file, onRemove }: FilePreviewProps) => (
       mb: 2,
     }}
   >
-    <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Box sx={{ display : "flex", alignItems: "center" }}>
       <PdfIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
       <Box>
         <Typography variant="subtitle1" noWrap sx={{ maxWidth: 200 }}>

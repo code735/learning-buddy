@@ -29,42 +29,31 @@ const s3 = new S3Client({
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-async function uploadToWeaviate(
-  fileName: string,
-  extractedText: string,
-  url: string,
-  embeddings: number[]
-): Promise<void> {
-  const wcdUrl: string = process.env.WCD_URL || '';
-  const wcdApiKey: string = process.env.WCD_API_KEY || '';
-
-  const client: WeaviateClient = await weaviate.client({
-    scheme: 'https',
-    host: wcdUrl,
-    apiKey: new ApiKey(wcdApiKey),
-  });
-
-  const dataObject = {
-    fileName: fileName,
-    extractedText: extractedText,
-    url: url,
+async function createPdfDetailsClass(client: WeaviateClient) {
+  const classObj = {
+    class: 'PdfDetails',
+    vectorizer: 'none',  // Since you're providing custom vectors
+    properties: [
+      {
+        name: 'fileName',
+        dataType: ['string'],
+      },
+      {
+        name: 'extractedText',
+        dataType: ['text'],
+      },
+      {
+        name: 'url',
+        dataType: ['string'],
+      },
+    ],
   };
 
-  let batcher = client.batch.objectsBatcher();
-
-  batcher = batcher.withObject({
-    class: 'PdfDetails',
-    properties: dataObject,
-    vector: embeddings,
-  });
-
   try {
-    const response = await batcher.do();
-    console.log('Data object with embeddings stored successfully.');
-    console.log(response);
+    await client.schema.classCreator().withClass(classObj).do();
+    console.log('PdfDetails class created successfully');
   } catch (error) {
-    console.error('Error storing data in Weaviate:', error);
-    throw error;
+    console.error('Error creating PdfDetails class:', error);
   }
 }
 
@@ -97,7 +86,13 @@ async function uploadToS3(fileBuffer: Buffer, fileName: string, mimeType: MimeTy
     const embeddings = await generateEmbeddings(extracted_text?.text);
     console.log("embeddings:", ...embeddings);
 
-    await uploadToWeaviate(fileName, extracted_text, url, embeddings);
+    const client: WeaviateClient = await weaviate.client({
+      scheme: 'https',
+      host: wcdUrl,
+      apiKey: new ApiKey(wcdApiKey),
+    });
+    
+    await createPdfDetailsClass(client);
 
 
     console.log('Data object with embeddings stored successfully.');

@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState,  } from "react";
 import "./Styles/App.scss";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AttachFile, SendRounded } from "@mui/icons-material";
-import LMSPage from "./Components/LMSPage";
+import FileUpload from "./Components/FileUpload";
+import APP from "./Components/LMSPage";
 
 function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -68,8 +69,8 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/LMS" element={<LMSPage/>}/>
-
+         <Route path="/LMS" element={<APP/>}/>
+          <Route path="/upload" element={<FileUpload />}/>
         </Routes>
       </BrowserRouter>
     </div>

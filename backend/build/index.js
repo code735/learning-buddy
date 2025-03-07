@@ -64,34 +64,32 @@ const s3 = new S3Client({
     },
 });
 const upload = multer({ storage: multer.memoryStorage() });
-function uploadToWeaviate(fileName, extractedText, url, embeddings) {
+function createPdfDetailsClass(client) {
     return __awaiter(this, void 0, void 0, function* () {
-        const wcdUrl = process.env.WCD_URL || '';
-        const wcdApiKey = process.env.WCD_API_KEY || '';
-        const client = yield weaviate_ts_client_1.default.client({
-            scheme: 'https',
-            host: wcdUrl,
-            apiKey: new weaviate_ts_client_1.ApiKey(wcdApiKey),
-        });
-        const dataObject = {
-            fileName: fileName,
-            extractedText: extractedText,
-            url: url,
-        };
-        let batcher = client.batch.objectsBatcher();
-        batcher = batcher.withObject({
+        const classObj = {
             class: 'PdfDetails',
-            properties: dataObject,
-            vector: embeddings,
-        });
+            vectorizer: 'none', // Since you're providing custom vectors
+            properties: [
+                {
+                    name: 'fileName',
+                    dataType: ['string'],
+                },
+                {
+                    name: 'extractedText',
+                    dataType: ['text'],
+                },
+                {
+                    name: 'url',
+                    dataType: ['string'],
+                },
+            ],
+        };
         try {
-            const response = yield batcher.do();
-            console.log('Data object with embeddings stored successfully.');
-            console.log(response);
+            yield client.schema.classCreator().withClass(classObj).do();
+            console.log('PdfDetails class created successfully');
         }
         catch (error) {
-            console.error('Error storing data in Weaviate:', error);
-            throw error;
+            console.error('Error creating PdfDetails class:', error);
         }
     });
 }
@@ -116,7 +114,12 @@ function uploadToS3(fileBuffer, fileName, mimeType) {
     VALUES (${fileName}, ${extracted_text}, ${url})`;
             const embeddings = yield (0, api_1.generateEmbeddings)(extracted_text === null || extracted_text === void 0 ? void 0 : extracted_text.text);
             console.log("embeddings:", ...embeddings);
-            yield uploadToWeaviate(fileName, extracted_text, url, embeddings);
+            const client = yield weaviate_ts_client_1.default.client({
+                scheme: 'https',
+                host: wcdUrl,
+                apiKey: new weaviate_ts_client_1.ApiKey(wcdApiKey),
+            });
+            yield createPdfDetailsClass(client);
             console.log('Data object with embeddings stored successfully.');
             return url;
         }
